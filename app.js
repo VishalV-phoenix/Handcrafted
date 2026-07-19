@@ -256,8 +256,99 @@ const DOM = {
   activeTargetPageName: document.getElementById('active-target-page-name'),
   selectTargetPage: document.getElementById('select-target-page'),
   pageElementsList: document.getElementById('page-elements-list'),
-  cameraContainer: document.getElementById('camera-container')
+  cameraContainer: document.getElementById('camera-container'),
+
+  // Share Card elements
+  btnShareCardSidebar: document.getElementById('btn-share-card-sidebar'),
+  btnShareCardTop: document.getElementById('btn-share-card-top'),
+  shareModalOverlay: document.getElementById('share-modal-overlay'),
+  shareModalClose: document.getElementById('share-modal-close'),
+  shareUrlInput: document.getElementById('share-url-input'),
+  btnCopyShareUrl: document.getElementById('btn-copy-share-url'),
+  shareModalNote: document.getElementById('share-modal-note'),
+  shareToast: document.getElementById('share-toast'),
+  shareToastMsg: document.getElementById('share-toast-msg')
 };
+
+/* -------------------------------------------------------------------------- */
+/* SHARE CARD & CLIPBOARD HELPER UTILITIES                                    */
+/* -------------------------------------------------------------------------- */
+
+function generateRecipientUrl() {
+  const origin = (typeof window !== 'undefined' && window.location && window.location.origin) ? window.location.origin : 'http://localhost:5173';
+  const pathname = (typeof window !== 'undefined' && window.location && window.location.pathname) ? window.location.pathname : '/';
+
+  let url = `${origin}${pathname}`;
+  if (state.cardId) {
+    url += `?view=card&id=${encodeURIComponent(state.cardId)}`;
+  } else {
+    url += `?mode=recipient`;
+  }
+  return url;
+}
+
+let shareToastTimer = null;
+function showShareToast(message) {
+  const toast = DOM.shareToast || document.getElementById('share-toast');
+  const toastMsg = DOM.shareToastMsg || document.getElementById('share-toast-msg');
+  if (!toast || !toastMsg) return;
+
+  toastMsg.textContent = message;
+  toast.style.display = 'flex';
+
+  requestAnimationFrame(() => {
+    toast.classList.add('visible');
+  });
+
+  if (shareToastTimer) clearTimeout(shareToastTimer);
+  shareToastTimer = setTimeout(() => {
+    toast.classList.remove('visible');
+    setTimeout(() => { toast.style.display = 'none'; }, 400);
+  }, 4500);
+}
+
+function openShareModal(url, note) {
+  const overlay = DOM.shareModalOverlay || document.getElementById('share-modal-overlay');
+  const input = DOM.shareUrlInput || document.getElementById('share-url-input');
+  const noteEl = DOM.shareModalNote || document.getElementById('share-modal-note');
+
+  if (!overlay || !input) return;
+
+  input.value = url;
+  if (noteEl) noteEl.textContent = note || '';
+  overlay.style.display = 'flex';
+
+  setTimeout(() => {
+    input.focus();
+    input.select();
+  }, 50);
+}
+
+function closeShareModal() {
+  const overlay = DOM.shareModalOverlay || document.getElementById('share-modal-overlay');
+  if (overlay) overlay.style.display = 'none';
+}
+
+function handleShareCard() {
+  const recipientUrl = generateRecipientUrl();
+  const hostname = (typeof window !== 'undefined' && window.location && window.location.hostname) ? window.location.hostname : 'localhost';
+  const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
+
+  let localNote = '';
+  if (isLocalhost) {
+    localNote = ' Note: Localhost links work on this computer. Use your local network IP (e.g. 192.168.x.x) or deploy to share with other devices.';
+  }
+
+  if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+    navigator.clipboard.writeText(recipientUrl).then(() => {
+      showShareToast(`Recipient link copied to clipboard!${localNote}`);
+    }).catch(() => {
+      openShareModal(recipientUrl, localNote);
+    });
+  } else {
+    openShareModal(recipientUrl, localNote);
+  }
+}
 
 const ctx = DOM.canvas.getContext('2d');
 let confettiParticles = [];
@@ -990,6 +1081,30 @@ function setupEventListeners() {
       resetCard();
     }
   });
+
+  // 17. Share Card buttons & modal event listeners
+  if (DOM.btnShareCardSidebar) DOM.btnShareCardSidebar.addEventListener('click', handleShareCard);
+  if (DOM.btnShareCardTop) DOM.btnShareCardTop.addEventListener('click', handleShareCard);
+  if (DOM.shareModalClose) DOM.shareModalClose.addEventListener('click', closeShareModal);
+  if (DOM.btnCopyShareUrl) {
+    DOM.btnCopyShareUrl.addEventListener('click', () => {
+      const input = DOM.shareUrlInput;
+      if (!input) return;
+      input.select();
+      try {
+        document.execCommand('copy');
+        showShareToast('Recipient link copied to clipboard!');
+      } catch (err) {
+        alert('Please manually copy the URL from the input box.');
+      }
+      closeShareModal();
+    });
+  }
+  if (DOM.shareModalOverlay) {
+    DOM.shareModalOverlay.addEventListener('click', (e) => {
+      if (e.target === DOM.shareModalOverlay) closeShareModal();
+    });
+  }
 }
 
 /* -------------------------------------------------------------------------- */
