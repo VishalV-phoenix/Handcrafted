@@ -378,104 +378,107 @@
       <!-- Card Container with CSS Perspective -->
       <div class="card-perspective-container">
         
-        <!-- Float container wrapper to isolate float keyframes from JS mouse tilt -->
-        <div class="card-float-container" id="card-float-container">
-          <div class="card-shadow" id="card-shadow"></div>
-          <div class="card-wrapper" id="card-wrapper">
-            <!-- The 3D Book Structure -->
-            <div class="book-3d" id="book-3d">
-              
-              <!-- Sheet 1 (Cover / Inside Left) -->
-              <div class="book-sheet" id="sheet-cover">
+        <!-- Dedicated Virtual Camera Container (Scaling & Translation) -->
+        <div class="camera-container" id="camera-container">
+          <!-- Float container wrapper to isolate float keyframes from JS mouse tilt -->
+          <div class="card-float-container" id="card-float-container">
+            <div class="card-shadow" id="card-shadow"></div>
+            <div class="card-wrapper" id="card-wrapper">
+              <!-- The 3D Book Structure -->
+              <div class="book-3d" id="book-3d">
                 
-                <!-- Page 1: Front Cover -->
-                <div class="book-page page-front cover-page" id="page-cover-front">
-                  <div class="holographic-foil"></div>
-                  <div class="page-shine"></div>
-                  <!-- Page content wrapper acts as a sticker canvas overlay -->
-                  <div class="page-content-wrapper sticker-canvas" id="canvas-page-0" data-page-index="0">
-                    <div class="cover-design-frame">
-                      <div class="cover-decoration-top"></div>
-                      
-                      <!-- Title made draggable and styleable -->
-                      <div class="draggable-text-wrapper selected" id="text-cover-title" data-text-id="coverTitle">
-                        <h1 class="cover-title" id="card-cover-title" contenteditable="true" placeholder="Happy Birthday!">Happy Birthday!</h1>
-                        <div class="text-drag-handle">::</div>
-                      </div>
+                <!-- Sheet 1 (Cover / Inside Left) -->
+                <div class="book-sheet" id="sheet-cover">
+                  
+                  <!-- Page 1: Front Cover -->
+                  <div class="book-page page-front cover-page" id="page-cover-front">
+                    <div class="holographic-foil"></div>
+                    <div class="page-shine"></div>
+                    <!-- Page content wrapper acts as a sticker canvas overlay -->
+                    <div class="page-content-wrapper sticker-canvas" id="canvas-page-0" data-page-index="0">
+                      <div class="cover-design-frame">
+                        <div class="cover-decoration-top"></div>
+                        
+                        <!-- Title made draggable and styleable -->
+                        <div class="draggable-text-wrapper selected" id="text-cover-title" data-text-id="coverTitle">
+                          <h1 class="cover-title" id="card-cover-title" contenteditable="true" placeholder="Happy Birthday!">Happy Birthday!</h1>
+                          <div class="text-drag-handle">::</div>
+                        </div>
 
-                      <div class="cover-artwork" id="cover-artwork-container">
-                        <!-- Rendered by active theme -->
+                        <div class="cover-artwork" id="cover-artwork-container">
+                          <!-- Rendered by active theme -->
+                        </div>
+                        <div class="cover-decoration-bottom"></div>
                       </div>
-                      <div class="cover-decoration-bottom"></div>
                     </div>
                   </div>
+
+                  <!-- Page 2: Inside Left (Decorative Page / Quote) -->
+                  <div class="book-page page-back inside-left-page" id="page-inside-left">
+                    <div class="page-shine"></div>
+                    <div class="page-content-wrapper sticker-canvas" id="canvas-page-1" data-page-index="1">
+                      <div class="inside-left-frame">
+                        <div class="inside-left-art" id="inside-left-art-container"></div>
+                        
+                        <!-- Quote made draggable, styleable, and contenteditable -->
+                        <div class="draggable-text-wrapper" id="text-inside-left-quote" data-text-id="insideLeftQuote">
+                          <p class="inside-left-quote" id="card-inside-quote" contenteditable="true">"A birthday is a beautiful beginning — a time for new starts, new goals, and a chance to celebrate the gift of you."</p>
+                          <div class="text-drag-handle">::</div>
+                        </div>
+
+                        <div class="inside-left-decor"></div>
+                      </div>
+                    </div>
+                  </div>
+
                 </div>
 
-                <!-- Page 2: Inside Left (Decorative Page / Quote) -->
-                <div class="book-page page-back inside-left-page" id="page-inside-left">
-                  <div class="page-shine"></div>
-                  <div class="page-content-wrapper sticker-canvas" id="canvas-page-1" data-page-index="1">
-                    <div class="inside-left-frame">
-                      <div class="inside-left-art" id="inside-left-art-container"></div>
-                      
-                      <!-- Quote made draggable, styleable, and contenteditable -->
-                      <div class="draggable-text-wrapper" id="text-inside-left-quote" data-text-id="insideLeftQuote">
-                        <p class="inside-left-quote" id="card-inside-quote" contenteditable="true">"A birthday is a beautiful beginning — a time for new starts, new goals, and a chance to celebrate the gift of you."</p>
-                        <div class="text-drag-handle">::</div>
+                <!-- Sheet 2 (Inside Right / Back Cover) -->
+                <div class="book-sheet" id="sheet-inside">
+                  
+                  <!-- Page 3: Inside Right (Message & Stickers Canvas) -->
+                  <div class="book-page page-front inside-right-page" id="page-inside-right">
+                    <div class="page-shine"></div>
+                    <div class="page-content-wrapper sticker-canvas" id="canvas-page-2" data-page-index="2">
+                      <div class="lined-paper">
+                        <!-- Message text made draggable, styleable, and contenteditable -->
+                        <div class="draggable-text-wrapper" id="text-inside-right-message" data-text-id="insideRightMessage">
+                          <div class="handwritten-message" id="card-inside-message" contenteditable="true" placeholder="Click here to write your message..."></div>
+                          <div class="text-drag-handle">::</div>
+                        </div>
                       </div>
-
-                      <div class="inside-left-decor"></div>
                     </div>
                   </div>
+
+                  <!-- Page 4: Back Cover -->
+                  <div class="book-page page-back back-cover-page" id="page-back-cover">
+                    <div class="page-shine"></div>
+                    <div class="page-content-wrapper sticker-canvas" id="canvas-page-3" data-page-index="3">
+                      <div class="back-cover-design">
+                        <!-- <div class="seal-container">
+                          <div class="seal">
+                            <span class="seal-text">HANDCRAFTED</span>
+                            <span class="seal-heart">❤</span>
+                          </div>
+                        </div> -->
+                        
+                        <!-- Sender signature made draggable, styleable, and contenteditable -->
+                        <div class="draggable-text-wrapper" id="text-back-sender" data-text-id="backSender">
+                          <div class="signature-box">
+                            <!-- <p class="sig-label">Created for you by</p> -->
+                            <p class="sig-name" id="card-back-sender" contenteditable="true">Sarah</p>
+                          </div>
+                          <div class="text-drag-handle">::</div>
+                        </div>
+
+                        <!-- <div class="made-with-love">Made with love in builder</div> -->
+                      </div>
+                    </div>
+                  </div>
+
                 </div>
 
               </div>
-
-              <!-- Sheet 2 (Inside Right / Back Cover) -->
-              <div class="book-sheet" id="sheet-inside">
-                
-                <!-- Page 3: Inside Right (Message & Stickers Canvas) -->
-                <div class="book-page page-front inside-right-page" id="page-inside-right">
-                  <div class="page-shine"></div>
-                  <div class="page-content-wrapper sticker-canvas" id="canvas-page-2" data-page-index="2">
-                    <div class="lined-paper">
-                      <!-- Message text made draggable, styleable, and contenteditable -->
-                      <div class="draggable-text-wrapper" id="text-inside-right-message" data-text-id="insideRightMessage">
-                        <div class="handwritten-message" id="card-inside-message" contenteditable="true" placeholder="Click here to write your message..."></div>
-                        <div class="text-drag-handle">::</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Page 4: Back Cover -->
-                <div class="book-page page-back back-cover-page" id="page-back-cover">
-                  <div class="page-shine"></div>
-                  <div class="page-content-wrapper sticker-canvas" id="canvas-page-3" data-page-index="3">
-                    <div class="back-cover-design">
-                      <!-- <div class="seal-container">
-                        <div class="seal">
-                          <span class="seal-text">HANDCRAFTED</span>
-                          <span class="seal-heart">❤</span>
-                        </div>
-                      </div> -->
-                      
-                      <!-- Sender signature made draggable, styleable, and contenteditable -->
-                      <div class="draggable-text-wrapper" id="text-back-sender" data-text-id="backSender">
-                        <div class="signature-box">
-                          <!-- <p class="sig-label">Created for you by</p> -->
-                          <p class="sig-name" id="card-back-sender" contenteditable="true">Sarah</p>
-                        </div>
-                        <div class="text-drag-handle">::</div>
-                      </div>
-
-                      <!-- <div class="made-with-love">Made with love in builder</div> -->
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-
             </div>
           </div>
         </div>
@@ -502,6 +505,15 @@
         <span class="hint-icon">🖱️</span>
         <span class="hint-text">Hover to tilt in 3D. Click card pages to flip.</span>
       </div>
+
+      <!-- Mobile Recipient Guidance Toast -->
+      <div class="mobile-recipient-hint" id="mobile-recipient-hint">
+        <span>🔍</span>
+        <span id="mobile-hint-text">Double tap spread to zoom & read</span>
+      </div>
+
+      <!-- Development Camera Debug HUD -->
+      <div class="camera-debug-hud" id="camera-debug-hud" style="display: none;"></div>
     </main>
   </div>
 

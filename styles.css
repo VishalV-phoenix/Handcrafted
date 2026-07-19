@@ -1952,3 +1952,101 @@ body {
   display: block;
 }
 
+/* Dedicated Virtual Camera Container */
+.camera-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+  pointer-events: none;
+}
+
+.camera-container.is-panning {
+  transition: none !important;
+}
+
+/* Development-Only Camera Debug HUD */
+.camera-debug-hud {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(0, 0, 0, 0.85);
+  color: #00ffcc;
+  font-family: monospace;
+  font-size: 0.7rem;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 255, 204, 0.3);
+  z-index: 1000;
+  pointer-events: none;
+  line-height: 1.4;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+/* -------------------------------------------------------------------------- */
+/* 14. MOBILE RECIPIENT EXPERIENCE & GESTURE SYSTEM                           */
+/* -------------------------------------------------------------------------- */
+.recipient-gesture-mode {
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.recipient-gesture-mode .book-page {
+  pointer-events: none !important;
+}
+
+.recipient-gesture-mode .book-page * {
+  pointer-events: none !important;
+}
+
+/* Smooth transition into reading mode (flatten 3D perspective ONLY when zoomed) */
+.zoomed-reading-mode {
+  perspective: none !important;
+  transition: perspective 0.4s ease;
+}
+
+.zoomed-reading-mode .card-wrapper {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-style: flat !important;
+}
+
+.zoomed-reading-mode .book-3d {
+  transform: rotateX(0deg) rotateY(0deg) !important;
+}
+
+.zoomed-reading-mode .card-shadow {
+  opacity: 0 !important;
+}
+
+/* Non-intrusive Mobile Recipient Guidance Toast */
+.mobile-recipient-hint {
+  display: none;
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(15, 10, 30, 0.82);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 8px 18px;
+  font-family: var(--ui-font);
+  font-size: 0.8rem;
+  font-weight: 500;
+  z-index: 99;
+  pointer-events: none;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  transition: opacity 0.4s ease;
+}
+
+.recipient-gesture-mode .mobile-recipient-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+

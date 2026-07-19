@@ -255,7 +255,8 @@ const DOM = {
   indicatorText: document.querySelector('.indicator-text'),
   activeTargetPageName: document.getElementById('active-target-page-name'),
   selectTargetPage: document.getElementById('select-target-page'),
-  pageElementsList: document.getElementById('page-elements-list')
+  pageElementsList: document.getElementById('page-elements-list'),
+  cameraContainer: document.getElementById('camera-container')
 };
 
 const ctx = DOM.canvas.getContext('2d');
@@ -806,11 +807,14 @@ function setupEventListeners() {
   persContainer.addEventListener('mouseleave', resetCardTilt);
 
   persContainer.addEventListener('touchmove', (e) => {
-    if (e.touches.length > 0) {
+    if (!isRecipientGestureMode() && e.touches.length > 0) {
       handleCardTilt(e.touches[0]);
     }
   }, { passive: true });
   persContainer.addEventListener('touchend', resetCardTilt);
+
+  // Bind Recipient Experience Gestures
+  bindRecipientGestureEvents();
 
   // 14. Text Format and Style inputs
   DOM.styleFontFamily.addEventListener('change', (e) => {
@@ -926,10 +930,297 @@ function setupEventListeners() {
 }
 
 /* -------------------------------------------------------------------------- */
+/* UNIFIED VIRTUAL CAMERA MODEL (SINGLE SOURCE OF TRUTH & CAMERA CONFIG)      */
+/* -------------------------------------------------------------------------- */
+const WORLD_CONFIG = {
+  pageWidth: 400,
+  pageHeight: 550,
+  get spreadWidth() {
+    return this.pageWidth * 2;
+  }
+};
+
+const CAMERA_CONFIG = {
+  opticalFocusOffsetRatio: 0.05, // 5% of page width (20px for 400px page)
+  get opticalFocusOffset() {
+    return WORLD_CONFIG.pageWidth * this.opticalFocusOffsetRatio;
+  },
+  get leftPageFocalTarget() {
+    return (-WORLD_CONFIG.pageWidth / 2) - this.opticalFocusOffset; // -220px
+  },
+  get rightPageFocalTarget() {
+    return (WORLD_CONFIG.pageWidth / 2) + this.opticalFocusOffset;  // +220px
+  }
+};
+
+const virtualCamera = {
+  x: 0, // Camera center offset relative to spine fold (0 = fold centered)
+  y: 0,
+  scale: 1,
+  mode: 'fit', // Explicit interaction mode: 'fit' or 'reading'
+  isFirstZoom: true,
+  debugEnabled: false,
+
+  get zoomed() {
+    return this.mode === 'reading';
+  },
+
+  reset() {
+    this.x = 0;
+    this.y = 0;
+    this.scale = 1;
+    this.mode = 'fit';
+    this.isFirstZoom = true;
+
+    const cameraEl = DOM.cameraContainer;
+    const container = document.querySelector('.card-perspective-container');
+    if (cameraEl) {
+      cameraEl.style.transform = '';
+      cameraEl.classList.remove('is-panning');
+    }
+    if (container) {
+      container.classList.remove('recipient-gesture-mode');
+      container.classList.remove('zoomed-reading-mode');
+    }
+
+    this.updateDebugHUD();
+  },
+
+  fitSpreadToScreen() {
+    const container = document.querySelector('.card-perspective-container');
+    const viewportWidth = container ? container.clientWidth : window.innerWidth;
+    const viewportHeight = container ? container.clientHeight : window.innerHeight;
+
+    const padding = 32;
+    const fitScaleX = (viewportWidth - padding) / WORLD_CONFIG.spreadWidth;
+    const fitScaleY = (viewportHeight - padding) / WORLD_CONFIG.pageHeight;
+
+    this.scale = Math.min(fitScaleX, fitScaleY, 1.0);
+    this.x = 0; // Perfectly center spine fold
+    this.y = 0;
+    this.mode = 'fit';
+    this.applyTransform();
+  },
+
+  zoomToFocalPoint(touchXScreen, touchYScreen) {
+    const container = document.querySelector('.card-perspective-container');
+    const rect = container ? container.getBoundingClientRect() : { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight };
+    const containerWidth = rect.width;
+
+    this.mode = 'reading';
+
+    // Derived comfortable reading zoom: fits ~1 page (400px) with ~15% margins
+    this.scale = Math.max(0.7, (containerWidth - 48) / WORLD_CONFIG.pageWidth);
+
+    const fitScale = Math.min((containerWidth - 32) / WORLD_CONFIG.spreadWidth, 1.0);
+    const relativeTapX = touchXScreen - rect.left - (rect.width / 2);
+
+    if (this.isFirstZoom && Math.abs(relativeTapX) < 100) {
+      this.x = relativeTapX < 0 ? CAMERA_CONFIG.leftPageFocalTarget : CAMERA_CONFIG.rightPageFocalTarget;
+      this.isFirstZoom = false;
+    } else {
+      this.x = relativeTapX / fitScale;
+    }
+
+    this.clamp();
+    this.applyTransform();
+  },
+
+  panBy(deltaScreenX) {
+    if (this.mode !== 'reading') return;
+    this.x -= deltaScreenX / this.scale;
+    this.clamp();
+    this.applyTransform();
+  },
+
+  clamp() {
+    if (this.mode !== 'reading') {
+      this.x = 0;
+      this.y = 0;
+      return;
+    }
+
+    // Clamp camera.x between leftPageFocalTarget (-220px) and rightPageFocalTarget (+220px)
+    this.x = Math.min(CAMERA_CONFIG.rightPageFocalTarget, Math.max(CAMERA_CONFIG.leftPageFocalTarget, this.x));
+    this.y = 0;
+  },
+
+  applyTransform() {
+    const cameraEl = DOM.cameraContainer;
+    const wrapper = DOM.cardWrapper;
+    const container = document.querySelector('.card-perspective-container');
+    if (!cameraEl || !container) return;
+
+    const finalTransform = `scale(${this.scale}) translate3d(${-this.x}px, ${-this.y}px, 0px)`;
+
+    if (this.mode === 'reading') {
+      container.classList.add('zoomed-reading-mode');
+      cameraEl.style.transform = finalTransform;
+      if (wrapper) wrapper.style.transform = 'rotateX(0deg) rotateY(0deg)';
+    } else {
+      container.classList.remove('zoomed-reading-mode');
+      if (isRecipientGestureMode()) {
+        cameraEl.style.transform = `scale(${this.scale}) translate3d(0px, 0px, 0px)`;
+        if (wrapper) wrapper.style.transform = 'rotateX(0deg) rotateY(0deg)';
+      } else {
+        cameraEl.style.transform = '';
+      }
+    }
+
+    this.updateDebugHUD();
+  },
+
+  toggleDebug() {
+    this.debugEnabled = !this.debugEnabled;
+    this.updateDebugHUD();
+  },
+
+  updateDebugHUD() {
+    const hud = document.getElementById('camera-debug-hud');
+    const urlParams = new URLSearchParams(window.location.search);
+    if (!hud) return;
+
+    if (this.debugEnabled || urlParams.has('debug')) {
+      hud.style.display = 'block';
+      const container = document.querySelector('.card-perspective-container');
+      const vw = container ? container.clientWidth : window.innerWidth;
+      const vh = container ? container.clientHeight : window.innerHeight;
+      
+      hud.innerHTML = `
+        <b>[CAM DEBUG]</b><br>
+        Mode: ${this.mode.toUpperCase()}<br>
+        Camera Center X: ${Math.round(this.x)}px<br>
+        Scale: ${this.scale.toFixed(3)}x<br>
+        Viewport: ${vw}x${vh}px<br>
+        Focal Targets: ${Math.round(CAMERA_CONFIG.leftPageFocalTarget)} / ${Math.round(CAMERA_CONFIG.rightPageFocalTarget)}px
+      `;
+    } else {
+      hud.style.display = 'none';
+    }
+  }
+};
+
+function isRecipientGestureMode() {
+  if (state.mode !== 'preview') return false;
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const isRecipientUrl = urlParams.get('mode') === 'recipient' || urlParams.get('view') === 'recipient';
+  const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+  const isSmallScreen = window.innerWidth <= 768;
+
+  return isRecipientUrl || isTouchDevice || isSmallScreen;
+}
+
+function updateRecipientGestureModeState() {
+  const container = document.querySelector('.card-perspective-container');
+  if (!container) return;
+
+  if (isRecipientGestureMode() && state.activePage === 1) {
+    container.classList.add('recipient-gesture-mode');
+    if (!virtualCamera.zoomed) {
+      virtualCamera.fitSpreadToScreen();
+    }
+  } else {
+    // Unconditional Reset when leaving inside spread or leaving preview mode
+    virtualCamera.reset();
+  }
+  updateMobileHintText();
+}
+
+let recipientLastTapTime = 0;
+let recipientIsPanning = false;
+let recipientStartX = 0;
+
+function bindRecipientGestureEvents() {
+  const container = document.querySelector('.card-perspective-container');
+  if (!container) return;
+
+  // Pointer Events support DevTools mouse simulation + real touch devices + iOS Safari!
+  container.addEventListener('pointerdown', (e) => {
+    if (!isRecipientGestureMode() || state.activePage !== 1) return;
+
+    const now = Date.now();
+    const timeSinceLastTap = now - recipientLastTapTime;
+
+    if (timeSinceLastTap < 300 && timeSinceLastTap > 0) {
+      e.preventDefault();
+      handleRecipientDoubleTapZoom(e);
+      recipientLastTapTime = 0;
+      return;
+    }
+    recipientLastTapTime = now;
+
+    if (virtualCamera.zoomed) {
+      recipientIsPanning = true;
+      recipientStartX = e.clientX;
+      if (DOM.cameraContainer) DOM.cameraContainer.classList.add('is-panning');
+    }
+  });
+
+  container.addEventListener('pointermove', (e) => {
+    if (!isRecipientGestureMode() || state.activePage !== 1) return;
+
+    if (virtualCamera.zoomed && recipientIsPanning) {
+      e.preventDefault();
+      const deltaX = e.clientX - recipientStartX;
+      recipientStartX = e.clientX;
+      virtualCamera.panBy(deltaX);
+    }
+  });
+
+  container.addEventListener('pointerup', () => {
+    recipientIsPanning = false;
+    if (DOM.cameraContainer) DOM.cameraContainer.classList.remove('is-panning');
+  });
+
+  container.addEventListener('pointercancel', () => {
+    recipientIsPanning = false;
+    if (DOM.cameraContainer) DOM.cameraContainer.classList.remove('is-panning');
+  });
+
+  window.addEventListener('resize', () => {
+    if (isRecipientGestureMode() && state.activePage === 1) {
+      if (!virtualCamera.zoomed) {
+        virtualCamera.fitSpreadToScreen();
+      } else {
+        virtualCamera.clamp();
+        virtualCamera.applyTransform();
+      }
+    }
+    updateRecipientGestureModeState();
+  });
+}
+
+function handleRecipientDoubleTapZoom(e) {
+  if (virtualCamera.zoomed) {
+    virtualCamera.fitSpreadToScreen();
+  } else {
+    virtualCamera.zoomToFocalPoint(e.clientX, e.clientY);
+  }
+
+  updateMobileHintText();
+}
+
+function updateMobileHintText() {
+  const hintText = document.getElementById('mobile-hint-text');
+  if (hintText) {
+    if (virtualCamera.zoomed) {
+      hintText.textContent = "Drag spread to read • Double tap to zoom out";
+    } else {
+      hintText.textContent = "Double tap spread to zoom & read";
+    }
+  }
+}
+
+/* -------------------------------------------------------------------------- */
 /* 8. 3D TILT & SPECULAR FOIL SHINE MECHANICS                                 */
 /* -------------------------------------------------------------------------- */
 
 function handleCardTilt(e) {
+  if (virtualCamera.zoomed || (isRecipientGestureMode() && state.activePage === 1)) {
+    return;
+  }
+
   const container = document.querySelector('.card-perspective-container');
   const rect = container.getBoundingClientRect();
   
@@ -1042,6 +1333,8 @@ function setPageState(pageIndex) {
   DOM.pageDots.forEach((dot, index) => {
     dot.classList.toggle('active', index === pageIndex);
   });
+
+  updateRecipientGestureModeState();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1074,6 +1367,8 @@ function setAppMode(modeName) {
     setPageState(0);
     DOM.interactionHint.classList.remove('fade-out');
   }
+
+  updateRecipientGestureModeState();
 }
 
 /* -------------------------------------------------------------------------- */
