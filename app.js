@@ -267,13 +267,46 @@ let ambientParticles = [];
 /* 4. REACTIVE STATE SYNC & INITIALIZATION                                    */
 /* -------------------------------------------------------------------------- */
 
-function initApp() {
-  // Sync inputs
-  DOM.inputTitle.value = state.title;
-  DOM.inputMessage.value = state.message;
-  DOM.inputSender.value = state.sender;
+function detectRecipientRoute() {
+  const loc = (typeof window !== 'undefined' && window.location) ? window.location : { search: '', pathname: '', hash: '' };
+  const urlParams = new URLSearchParams(loc.search || '');
+  const pathname = (loc.pathname || '').toLowerCase();
+  const hash = (loc.hash || '').toLowerCase();
 
-  // Apply default text values
+  // 1. Check path routes: /view, /recipient, /card/:id
+  const isPathView = pathname.includes('/view') || pathname.includes('/recipient') || pathname.includes('/card/');
+
+  // 2. Check query params: ?mode=recipient, ?view=recipient, ?view=card, ?card=*, ?id=*
+  const isParamView = urlParams.get('mode') === 'recipient' || 
+                      urlParams.get('view') === 'recipient' || 
+                      urlParams.get('view') === 'card' || 
+                      urlParams.has('card') || 
+                      urlParams.has('id');
+
+  // 3. Check hash routes: #view, #recipient, #card/*
+  const isHashView = hash.includes('view') || hash.includes('recipient') || hash.includes('card');
+
+  // 4. Extract Card ID for future-proof card payload loading (e.g. /card/123 -> '123')
+  let cardId = urlParams.get('card') || urlParams.get('id') || null;
+  if (!cardId && pathname.includes('/card/')) {
+    const parts = pathname.split('/card/');
+    if (parts[1]) cardId = parts[1].split('/')[0];
+  }
+  if (!cardId && hash.includes('card/')) {
+    const parts = hash.split('card/');
+    if (parts[1]) cardId = parts[1].split('/')[0];
+  }
+
+  return {
+    isRecipientView: isPathView || isParamView || isHashView,
+    cardId: cardId
+  };
+}
+
+function initApp() {
+  const routeInfo = detectRecipientRoute();
+
+  // Apply default text values to card DOM
   DOM.textElements.coverTitle.inner.textContent = state.title;
   DOM.textElements.insideRightMessage.inner.textContent = state.message;
   DOM.textElements.backSender.inner.textContent = state.sender;
@@ -285,23 +318,53 @@ function initApp() {
   // Apply custom backgrounds if loaded
   for (let i = 0; i < 4; i++) {
     applyBackgroundStyles(i);
-    syncBackgroundSidebarCard(i);
   }
 
-  // Color bubbles injection in sidebar
-  renderColorPalette();
-
-  // Event Listeners setup
-  setupEventListeners();
-
-  // Canvas resize and loop
+  // Canvas resize and particle animation loop
   resizeCanvas();
   window.addEventListener('resize', resizeCanvas);
   startAmbientParticlesLoop();
 
-  // Set default targeted editing page
-  setPageState(0); // Initialize at closed page 0
-  renderPageElementsList();
+  if (routeInfo.isRecipientView) {
+    // STANDALONE RECIPIENT VIEW ROUTE
+    state.cardId = routeInfo.cardId; // Future-proof card ID state
+    DOM.app.classList.add('mode-recipient-standalone');
+
+    // Activate preview mode and closed front cover
+    setAppMode('preview');
+    setPageState(0);
+
+    // Bind 3D Hover Tilt & Recipient Experience Gestures
+    const persContainer = document.querySelector('.card-perspective-container');
+    if (persContainer) {
+      persContainer.addEventListener('mousemove', handleCardTilt);
+      persContainer.addEventListener('mouseleave', resetCardTilt);
+
+      persContainer.addEventListener('touchmove', (e) => {
+        if (!isRecipientGestureMode() && e.touches.length > 0) {
+          handleCardTilt(e.touches[0]);
+        }
+      }, { passive: true });
+      persContainer.addEventListener('touchend', resetCardTilt);
+    }
+    bindRecipientGestureEvents();
+  } else {
+    // REGULAR BUILDER EDITOR MODE (Unchanged)
+    DOM.inputTitle.value = state.title;
+    DOM.inputMessage.value = state.message;
+    DOM.inputSender.value = state.sender;
+
+    for (let i = 0; i < 4; i++) {
+      syncBackgroundSidebarCard(i);
+    }
+
+    renderColorPalette();
+    setupEventListeners();
+
+    // Set default targeted editing page
+    setPageState(0); // Initialize at closed page 0
+    renderPageElementsList();
+  }
 }
 
 function updateThemeVisuals() {
@@ -1077,7 +1140,8 @@ const virtualCamera = {
 
   updateDebugHUD() {
     const hud = document.getElementById('camera-debug-hud');
-    const urlParams = new URLSearchParams(window.location.search);
+    const locSearch = (typeof window !== 'undefined' && window.location) ? window.location.search : '';
+    const urlParams = new URLSearchParams(locSearch || '');
     if (!hud) return;
 
     if (this.debugEnabled || urlParams.has('debug')) {
@@ -1103,12 +1167,11 @@ const virtualCamera = {
 function isRecipientGestureMode() {
   if (state.mode !== 'preview') return false;
 
-  const urlParams = new URLSearchParams(window.location.search);
-  const isRecipientUrl = urlParams.get('mode') === 'recipient' || urlParams.get('view') === 'recipient';
+  const routeInfo = detectRecipientRoute();
   const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
   const isSmallScreen = window.innerWidth <= 768;
 
-  return isRecipientUrl || isTouchDevice || isSmallScreen;
+  return routeInfo.isRecipientView || isTouchDevice || isSmallScreen;
 }
 
 function updateRecipientGestureModeState() {

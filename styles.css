@@ -2049,4 +2049,19 @@ body {
   gap: 8px;
 }
 
+/* -------------------------------------------------------------------------- */
+/* 15. STANDALONE RECIPIENT ROUTE                                            */
+/* -------------------------------------------------------------------------- */
+.mode-recipient-standalone .workbench,
+.mode-recipient-standalone .viewer-top-bar,
+.mode-recipient-standalone .exit-preview-btn {
+  display: none !important;
+}
+
+.mode-recipient-standalone .card-viewer {
+  padding: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+}
+
 
