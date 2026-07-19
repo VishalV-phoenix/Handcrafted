@@ -315,8 +315,14 @@ function updateThemeVisuals() {
   document.getElementById('cover-artwork-container').innerHTML = "";
   document.getElementById('inside-left-art-container').innerHTML = "";
   
-  document.querySelector('.seal-text').textContent = THEME_SEALS[state.theme];
-  document.querySelector('.made-with-love').textContent = `Assembled by hand in builder mode`;
+  const sealText = document.querySelector('.seal-text');
+  if (sealText) sealText.textContent = THEME_SEALS[state.theme];
+  
+  const madeWithLove = document.querySelector('.made-with-love');
+  if (madeWithLove) madeWithLove.textContent = `Assembled by hand in builder mode`;
+
+  const sigLabel = document.querySelector('.sig-label');
+  if (sigLabel) sigLabel.textContent = `Created for you by`;
 
   // Apply quote only if not customized/edited
   if (DOM.textElements.insideLeftQuote.inner.textContent === THEME_QUOTES.party ||
