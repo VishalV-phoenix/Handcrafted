@@ -307,9 +307,13 @@ function updateThemeVisuals() {
   DOM.app.classList.remove('theme-party', 'theme-elegant', 'theme-cute', 'theme-minimal');
   DOM.app.classList.add(`theme-${state.theme}`);
 
-  // Injections
-  document.getElementById('cover-artwork-container').innerHTML = SVG_ASSETS.themeCoverArt[state.theme];
-  document.getElementById('inside-left-art-container').innerHTML = SVG_ASSETS.themeInsideLeftArt[state.theme];
+  // Theme artwork intentionally disabled.
+  // Keeping original code for future optional theme decorations.
+  // document.getElementById('cover-artwork-container').innerHTML = SVG_ASSETS.themeCoverArt[state.theme];
+  // document.getElementById('inside-left-art-container').innerHTML = SVG_ASSETS.themeInsideLeftArt[state.theme];
+
+  document.getElementById('cover-artwork-container').innerHTML = "";
+  document.getElementById('inside-left-art-container').innerHTML = "";
   
   document.querySelector('.seal-text').textContent = THEME_SEALS[state.theme];
   document.querySelector('.made-with-love').textContent = `Assembled by hand in builder mode`;
