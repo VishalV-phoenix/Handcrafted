@@ -1,0 +1,12 @@
+{
+  "name": "handcrafted-3d-wishes",
+  "version": "1.0.0",
+  "description": "A 3D interactive birthday card builder and previewer prototype",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx -y http-server -p 3000"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

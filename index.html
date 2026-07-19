@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Handcrafted - 3D Birthday Card Builder & Previewer</title>
+  
+  <!-- Google Fonts for Themes & Interface -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Inter:wght@300;400;500;600&family=Outfit:wght@400;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app" class="mode-builder">
+    <!-- Creator Workbench (Sidebar) -->
+    <aside class="workbench">
+      <header class="workbench-header">
+        <div class="logo">
+          <span class="logo-icon">✨</span>
+          <div>
+            <h1>Handcrafted</h1>
+            <p>Make something truly personal</p>
+          </div>
+        </div>
+      </header>
+
+      <!-- App Mode Switcher -->
+      <div class="mode-toggle-container">
+        <button id="btn-mode-builder" class="mode-btn active">
+          <svg class="icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+          Builder Mode
+        </button>
+        <button id="btn-mode-preview" class="mode-btn">
+          <svg class="icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+          Recipient Preview
+        </button>
+      </div>
+
+      <!-- Workbench Navigation Tabs -->
+      <nav class="workbench-tabs">
+        <button class="tab-btn active" data-tab="themes">
+          🎨 Style & Bg
+        </button>
+        <button class="tab-btn" data-tab="content">
+          ✍️ Typography
+        </button>
+        <button class="tab-btn" data-tab="stickers">
+          ✨ Stickers
+        </button>
+      </nav>
+
+      <!-- Tab Content Panels -->
+      <div class="tab-panels">
+        <!-- 1. Theme & Background Panel -->
+        <section id="panel-themes" class="tab-panel active">
+          <h2>Select a Style Theme</h2>
+          <p class="panel-desc">Choose a default design aesthetic. This sets baseline fonts, layouts, and colors.</p>
+          
+          <div class="theme-grid">
+            <button class="theme-option active" data-theme="party">
+              <span class="theme-preview party-preview">🎈</span>
+              <span class="theme-label">Party</span>
+            </button>
+            <button class="theme-option" data-theme="elegant">
+              <span class="theme-preview elegant-preview">🌹</span>
+              <span class="theme-label">Elegant</span>
+            </button>
+            <button class="theme-option" data-theme="cute">
+              <span class="theme-preview cute-preview">🧸</span>
+              <span class="theme-label">Cute</span>
+            </button>
+            <button class="theme-option" data-theme="minimal">
+              <span class="theme-preview minimal-preview">🌿</span>
+              <span class="theme-label">Minimal</span>
+            </button>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- Page Background Upload Section -->
+          <h2>Page Backgrounds</h2>
+          <p class="panel-desc">Customize page backgrounds. Upload a photo and slide X Offset to adjust its crop horizontal position.</p>
+          
+          <div class="bg-span-toggle-wrapper" style="margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+            <input type="checkbox" id="checkbox-span-bg" style="width: auto; cursor: pointer;">
+            <label for="checkbox-span-bg" style="margin-bottom: 0; font-size: 0.8rem; cursor: pointer; font-weight: 500; color: var(--ui-text-main);">Span Inside Left BG across both pages</label>
+          </div>
+
+          <div class="bg-upload-grid">
+            <!-- Front Cover -->
+            <div class="bg-upload-card" data-page-index="0">
+              <div class="bg-upload-row">
+                <span class="bg-label">Front Cover</span>
+                <div class="bg-actions">
+                  <button class="btn-icon btn-upload" title="Upload Background">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
+                  </button>
+                  <button class="btn-icon btn-clear" title="Clear Image" disabled>✕</button>
+                </div>
+              </div>
+              <div class="bg-crop-control">
+                <label>X Position Offset:</label>
+                <div class="slider-group">
+                  <input type="range" class="bg-crop-slider" min="0" max="100" value="50">
+                  <span class="crop-val">50%</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Inside Left -->
+            <div class="bg-upload-card" data-page-index="1">
+              <div class="bg-upload-row">
+                <span class="bg-label" id="label-inside-left-bg">Inside Left</span>
+                <div class="bg-actions">
+                  <button class="btn-icon btn-upload" title="Upload Background">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
+                  </button>
+                  <button class="btn-icon btn-clear" title="Clear Image" disabled>✕</button>
+                </div>
+              </div>
+              <div class="bg-crop-control">
+                <label>X Position Offset:</label>
+                <div class="slider-group">
+                  <input type="range" class="bg-crop-slider" min="0" max="100" value="50">
+                  <span class="crop-val">50%</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Inside Right -->
+            <div class="bg-upload-card" data-page-index="2" id="bg-card-inside-right">
+              <div class="bg-upload-row">
+                <span class="bg-label">Inside Right</span>
+                <div class="bg-actions">
+                  <button class="btn-icon btn-upload" title="Upload Background">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
+                  </button>
+                  <button class="btn-icon btn-clear" title="Clear Image" disabled>✕</button>
+                </div>
+              </div>
+              <div class="bg-crop-control">
+                <label>X Position Offset:</label>
+                <div class="slider-group">
+                  <input type="range" class="bg-crop-slider" min="0" max="100" value="50">
+                  <span class="crop-val">50%</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Back Cover -->
+            <div class="bg-upload-card" data-page-index="3">
+              <div class="bg-upload-row">
+                <span class="bg-label">Back Cover</span>
+                <div class="bg-actions">
+                  <button class="btn-icon btn-upload" title="Upload Background">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
+                  </button>
+                  <button class="btn-icon btn-clear" title="Clear Image" disabled>✕</button>
+                </div>
+              </div>
+              <div class="bg-crop-control">
+                <label>X Position Offset:</label>
+                <div class="slider-group">
+                  <input type="range" class="bg-crop-slider" min="0" max="100" value="50">
+                  <span class="crop-val">50%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Hidden inputs for file loading -->
+          <input type="file" id="bg-file-input" accept="image/*" style="display: none;">
+        </section>
+
+        <!-- 2. Card Content & Typography Style Panel -->
+        <section id="panel-content" class="tab-panel">
+          <h2>Edit Text Content</h2>
+          <p class="panel-desc">Click directly on any text block on the card to edit, drag, and select styles, or type below.</p>
+          
+          <div class="form-group">
+            <label for="input-title">Front Cover Title</label>
+            <input type="text" id="input-title" placeholder="Happy Birthday!" value="Happy Birthday!">
+          </div>
+
+          <div class="form-group">
+            <label for="input-message">Inside Message</label>
+            <textarea id="input-message" rows="4" placeholder="Write a warm message..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="input-sender">Sender Name</label>
+            <input type="text" id="input-sender" placeholder="Sarah" value="Sarah">
+          </div>
+
+          <!-- Dynamic Text Block Style Controller Sub-panel -->
+          <div class="text-styling-subpanel" id="text-styles-control" style="display: none;">
+            <div class="divider" style="margin-top: 10px;"></div>
+            <h2>Style Selected Text</h2>
+            
+            <div class="form-group">
+              <label for="style-font-family">Font Family</label>
+              <select id="style-font-family">
+                <option value="Outfit">Outfit (Playful)</option>
+                <option value="Playfair Display">Playfair (Elegant Serif)</option>
+                <option value="Quicksand">Quicksand (Rounded)</option>
+                <option value="Caveat">Caveat (Handwritten)</option>
+                <option value="Inter">Inter (Clean Sans)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="style-font-size">Font Size</label>
+              <div class="slider-group">
+                <input type="range" id="style-font-size" min="12" max="64" value="28">
+                <span id="font-size-val">28px</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Weight & Style</label>
+              <div class="text-format-toolbar">
+                <button class="style-toggle-btn" id="btn-toggle-bold" title="Toggle Bold"><b>B</b></button>
+                <button class="style-toggle-btn" id="btn-toggle-italic" title="Toggle Italic"><i>I</i></button>
+                <div class="alignment-toggle" style="flex: 1; border-radius: 6px;">
+                  <button class="align-btn" data-align="left">Left</button>
+                  <button class="align-btn" data-align="center">Center</button>
+                  <button class="align-btn" data-align="right">Right</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="style-font-weight">Character Thickness</label>
+              <div class="slider-group">
+                <input type="range" id="style-font-weight" min="100" max="900" step="100" value="400">
+                <span id="font-weight-val">400</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Text Color</label>
+              <div class="color-palette" id="text-color-palette">
+                <!-- Color bubbles injected by JS -->
+                <div class="custom-color-wrapper">
+                  <input type="color" id="text-color-picker" value="#ff5e62" title="Choose custom color">
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. Stickers Panel -->
+        <section id="panel-stickers" class="tab-panel">
+          <h2>Stickers & Decorations</h2>
+          <p class="panel-desc">Click a sticker to place it on the **targeted page**. Drag, rotate, and scale it on the card.</p>
+          
+          <div class="target-page-indicator">
+            <label for="select-target-page" style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 0; cursor: pointer;">
+              <span>Target Page:</span>
+              <select id="select-target-page" class="target-page-select">
+                <option value="0">Front Cover</option>
+                <option value="1">Inside Left Page</option>
+                <option value="2" selected>Inside Right Page</option>
+                <option value="3">Back Cover</option>
+              </select>
+            </label>
+          </div>
+
+          <!-- Custom File Upload Sticker Trigger -->
+          <div class="custom-sticker-upload">
+            <button id="btn-custom-sticker" class="btn btn-secondary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 16px;">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+              Upload Custom Sticker
+            </button>
+            <input type="file" id="sticker-file-input" accept="image/*" style="display: none;">
+          </div>
+          
+          <div class="sticker-grid">
+            <button class="sticker-selector" data-sticker="balloon">
+              <span class="sticker-icon">🎈</span>
+              <span class="sticker-name">Balloon</span>
+            </button>
+            <button class="sticker-selector" data-sticker="cake">
+              <span class="sticker-icon">🎂</span>
+              <span class="sticker-name">Cake</span>
+            </button>
+            <button class="sticker-selector" data-sticker="candle">
+              <span class="sticker-icon">🕯️</span>
+              <span class="sticker-name">Candle</span>
+            </button>
+            <button class="sticker-selector" data-sticker="gift">
+              <span class="sticker-icon">🎁</span>
+              <span class="sticker-name">Gift</span>
+            </button>
+            <button class="sticker-selector" data-sticker="heart">
+              <span class="sticker-icon">❤️</span>
+              <span class="sticker-name">Heart</span>
+            </button>
+            <button class="sticker-selector" data-sticker="star">
+              <span class="sticker-icon">⭐</span>
+              <span class="sticker-name">Star</span>
+            </button>
+            <button class="sticker-selector" data-sticker="sparkles">
+              <span class="sticker-icon">✨</span>
+              <span class="sticker-name">Sparkles</span>
+            </button>
+            <button class="sticker-selector" data-sticker="flower">
+              <span class="sticker-icon">🌸</span>
+              <span class="sticker-name">Flower</span>
+            </button>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- Page Elements Layer Inspector -->
+          <div class="page-elements-inspector">
+            <h2>Page Layer Manager</h2>
+            <p class="panel-desc">Click any element below to select it on the canvas for editing or removal.</p>
+            <div id="page-elements-list" class="page-elements-list">
+              <!-- Rendered by JS -->
+            </div>
+          </div>
+
+          <!-- Dynamic Sticker Style Controller Sub-panel -->
+          <div class="sticker-styling-subpanel" id="sticker-controls-panel" style="display: none;">
+            <div class="divider" style="margin-top: 15px; margin-bottom: 15px;"></div>
+            <h2>Style Selected Sticker</h2>
+            
+            <div class="form-group">
+              <label for="sticker-scale">Size / Scale</label>
+              <div class="slider-group">
+                <input type="range" id="sticker-scale" min="0.2" max="4.0" step="0.1" value="1.0">
+                <span id="sticker-scale-val">1.0x</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="sticker-rotate">Rotation</label>
+              <div class="slider-group">
+                <input type="range" id="sticker-rotate" min="-180" max="180" step="1" value="0">
+                <span id="sticker-rotate-val">0°</span>
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 15px;">
+              <button class="btn btn-primary" id="btn-delete-sticker" style="background: #ff5e62; border-color: #ff5e62; width: 100%;">Delete Sticker</button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Instructions & Actions footer -->
+      <footer class="workbench-footer">
+        <button id="btn-reset" class="btn btn-secondary">Reset Card</button>
+      </footer>
+    </aside>
+
+    <!-- Interactive Card Area -->
+    <main class="card-viewer">
+      <!-- Ambient Sparkle Canvas for Preview Mode -->
+      <canvas id="ambient-canvas"></canvas>
+
+      <!-- Floating Exit Preview Button -->
+      <button id="btn-exit-preview" class="exit-preview-btn">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+        Edit Card
+      </button>
+
+      <!-- Status Header (Preview Info) -->
+      <div class="viewer-top-bar">
+        <div class="mode-indicator">
+          <span class="indicator-dot"></span>
+          <span class="indicator-text">Builder Workspace</span>
+        </div>
+      </div>
+
+      <!-- Card Container with CSS Perspective -->
+      <div class="card-perspective-container">
+        
+        <!-- Float container wrapper to isolate float keyframes from JS mouse tilt -->
+        <div class="card-float-container" id="card-float-container">
+          <div class="card-shadow" id="card-shadow"></div>
+          <div class="card-wrapper" id="card-wrapper">
+            <!-- The 3D Book Structure -->
+            <div class="book-3d" id="book-3d">
+              
+              <!-- Sheet 1 (Cover / Inside Left) -->
+              <div class="book-sheet" id="sheet-cover">
+                
+                <!-- Page 1: Front Cover -->
+                <div class="book-page page-front cover-page" id="page-cover-front">
+                  <div class="holographic-foil"></div>
+                  <div class="page-shine"></div>
+                  <!-- Page content wrapper acts as a sticker canvas overlay -->
+                  <div class="page-content-wrapper sticker-canvas" id="canvas-page-0" data-page-index="0">
+                    <div class="cover-design-frame">
+                      <div class="cover-decoration-top"></div>
+                      
+                      <!-- Title made draggable and styleable -->
+                      <div class="draggable-text-wrapper selected" id="text-cover-title" data-text-id="coverTitle">
+                        <h1 class="cover-title" id="card-cover-title" contenteditable="true" placeholder="Happy Birthday!">Happy Birthday!</h1>
+                        <div class="text-drag-handle">::</div>
+                      </div>
+
+                      <div class="cover-artwork" id="cover-artwork-container">
+                        <!-- Rendered by active theme -->
+                      </div>
+                      <div class="cover-decoration-bottom"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Page 2: Inside Left (Decorative Page / Quote) -->
+                <div class="book-page page-back inside-left-page" id="page-inside-left">
+                  <div class="page-shine"></div>
+                  <div class="page-content-wrapper sticker-canvas" id="canvas-page-1" data-page-index="1">
+                    <div class="inside-left-frame">
+                      <div class="inside-left-art" id="inside-left-art-container"></div>
+                      
+                      <!-- Quote made draggable, styleable, and contenteditable -->
+                      <div class="draggable-text-wrapper" id="text-inside-left-quote" data-text-id="insideLeftQuote">
+                        <p class="inside-left-quote" id="card-inside-quote" contenteditable="true">"A birthday is a beautiful beginning — a time for new starts, new goals, and a chance to celebrate the gift of you."</p>
+                        <div class="text-drag-handle">::</div>
+                      </div>
+
+                      <div class="inside-left-decor"></div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Sheet 2 (Inside Right / Back Cover) -->
+              <div class="book-sheet" id="sheet-inside">
+                
+                <!-- Page 3: Inside Right (Message & Stickers Canvas) -->
+                <div class="book-page page-front inside-right-page" id="page-inside-right">
+                  <div class="page-shine"></div>
+                  <div class="page-content-wrapper sticker-canvas" id="canvas-page-2" data-page-index="2">
+                    <div class="lined-paper">
+                      <!-- Message text made draggable, styleable, and contenteditable -->
+                      <div class="draggable-text-wrapper" id="text-inside-right-message" data-text-id="insideRightMessage">
+                        <div class="handwritten-message" id="card-inside-message" contenteditable="true" placeholder="Click here to write your message..."></div>
+                        <div class="text-drag-handle">::</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Page 4: Back Cover -->
+                <div class="book-page page-back back-cover-page" id="page-back-cover">
+                  <div class="page-shine"></div>
+                  <div class="page-content-wrapper sticker-canvas" id="canvas-page-3" data-page-index="3">
+                    <div class="back-cover-design">
+                      <div class="seal-container">
+                        <div class="seal">
+                          <span class="seal-text">HANDCRAFTED</span>
+                          <span class="seal-heart">❤</span>
+                        </div>
+                      </div>
+                      
+                      <!-- Sender signature made draggable, styleable, and contenteditable -->
+                      <div class="draggable-text-wrapper" id="text-back-sender" data-text-id="backSender">
+                        <div class="signature-box">
+                          <p class="sig-label">Created for you by</p>
+                          <p class="sig-name" id="card-back-sender" contenteditable="true">Sarah</p>
+                        </div>
+                        <div class="text-drag-handle">::</div>
+                      </div>
+
+                      <div class="made-with-love">Made with love in builder</div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Navigation Arrows -->
+      <div class="navigation-controls">
+        <button id="btn-prev-page" class="nav-arrow-btn" aria-label="Previous page" disabled>
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+        </button>
+        <div class="page-dots">
+          <span class="page-dot active" data-page="0"></span>
+          <span class="page-dot" data-page="1"></span>
+          <span class="page-dot" data-page="2"></span>
+        </div>
+        <button id="btn-next-page" class="nav-arrow-btn" aria-label="Next page">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+        </button>
+      </div>
+
+      <!-- Bottom Hint (Fades out when interacted with) -->
+      <div class="interaction-hint" id="interaction-hint">
+        <span class="hint-icon">🖱️</span>
+        <span class="hint-text">Hover to tilt in 3D. Click card pages to flip.</span>
+      </div>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
